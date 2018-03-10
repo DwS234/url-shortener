@@ -66,7 +66,16 @@ app.route('/')
 app.get("/create", function(req, res){
   var link = req.query.link;
   res.setHeader("Content-Type", "application/json");
+  
+  var re = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/;
+  
   if(link){
+    if(!link.match(re))
+    {
+       res.send(JSON.stringify({error: "Wrong url format. Try to add protocol if you didn't."}, null, 4));
+      return;
+    }
+    
     var counter;
   URL.findOne({myId: "counter"}, function(err, count){
     if(err)  
@@ -117,7 +126,11 @@ app.get("/get", function(req, res){
    {
     URL.findOne({originalUrl: link}, function(err, url){
        if(err)
+       {
          res.send("Something went wrong: " + err);
+         return;
+       }
+         
       else {
         if(url)
          res.send(JSON.stringify({originalUrl: url.originalUrl, shortenedUrl: url.shortenedUrl}, null, 3)); 
@@ -136,7 +149,11 @@ app.get("/:pageId", function(req, res){
   var pageId = req.params.pageId;
   var isLink = req.query.link;
   if(isLink)
+  {
     res.send("Such a page doesn't exist");
+    return;
+  }
+    
     
   URL.findOne({shortenedUrl: basePageUrl + pageId}, function(err, url){
      if(err)
